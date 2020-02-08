@@ -1,5 +1,5 @@
 ---
 pdg:
-    pr2Robot : false
+    pr2Robot : true
     spencerRobot : false
-    fullRobotConfig : false
+    fullRobotConfig : true

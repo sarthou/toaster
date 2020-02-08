@@ -1,5 +1,7 @@
 #include "pdg/readers/Pr2RobotReader.h"
 
+#include <tf/transform_datatypes.h>
+
 Pr2RobotReader::Pr2RobotReader(bool fullRobot)  : RobotReader(){
     fullRobot_ = fullRobot;
 }
@@ -64,7 +66,8 @@ void Pr2RobotReader::updateRobot(tf::TransformListener &listener)
     delete curJoint;
 
     //Then other joints if needed
-    if (fullRobot_ && initJointsName_) {
+    if (fullRobot_ && initJointsName_)
+    {
         for (unsigned int i = 0; i < pr2JointsName_.size(); i++) {
             curJoint = curRobot->skeleton_[pr2JointsName_[i]];
             curJoint->setName(pr2JointsName_[i]);
@@ -97,28 +100,30 @@ void Pr2RobotReader::setRobotJointLocation(tf::TransformListener &listener, Join
         jointPosition.set<2>(transform.getOrigin().z());
 
         //Joint orientation
-        //curRobot->orientation.push_back(tf::getRoll(transform.getRotation()));
-        //curRobot->orientation.push_back(tf::getPitch(transform.getRotation()));
-        jointOrientation.push_back(0.0);
-        jointOrientation.push_back(0.0);
-        jointOrientation.push_back(tf::getYaw(transform.getRotation()));
+        tf::Matrix3x3 m(transform.getRotation());
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        jointOrientation.push_back(roll);
+        jointOrientation.push_back(pitch);
+        jointOrientation.push_back(yaw);
 
         joint->setTime(now.toNSec());
         joint->setPosition(jointPosition);
         joint->setOrientation(jointOrientation);
-
-    } catch (tf::TransformException ex) {
-        ROS_ERROR("%s", ex.what());
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
     }
 }
 
-void Pr2RobotReader::pr2JointStateCallBack(const sensor_msgs::JointState::ConstPtr & msg) 
+void Pr2RobotReader::pr2JointStateCallBack(const sensor_msgs::JointState::ConstPtr & msg)
 {
 	if((fullRobot_ == true) && (activated_ == true))
 	{
-		if (!initJointsName_) 
+		if (!initJointsName_)
 		{
-        for (unsigned int i = 0; i < msg->name.size(); i++) 
+        for (unsigned int i = 0; i < msg->name.size(); i++)
 				{
             std::string jointName = msg->name[i];
             jointName = jointName.substr(0, msg->name[i].size() - 5);
@@ -135,11 +140,10 @@ void Pr2RobotReader::pr2JointStateCallBack(const sensor_msgs::JointState::ConstP
         initJointsName_ = true;
     }
 
-    if (pr2JointsName_.size() == msg->position.size()) 
+    if (pr2JointsName_.size() == msg->position.size())
 		{
         for (unsigned int i = 0; i < pr2JointsName_.size(); i++)
             lastConfig_["pr2"]->skeleton_[pr2JointsName_[i]]->position = msg->position[i];
-   
     }
 	}
 }

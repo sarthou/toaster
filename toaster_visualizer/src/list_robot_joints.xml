@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<list_members>
+
+    <object name="head_pan_link"                     mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/head/head_pan.dae" />
+    <object name="head_tilt_link"                    mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/head/head_tilt.dae" />
+
+    <object name="torso_lift_link"                   mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/torso/torso_lift.dae" />
+
+    <object name="r_gripper_l_finger_link"           mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/l_finger.dae" />
+    <object name="r_gripper_l_finger_tip_link"       mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/l_finger_tip.dae" />
+    <object name="r_gripper_palm_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/gripper_palm.dae" />
+    <object name="r_gripper_r_finger_link"           mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/r_finger.dae" />
+    <object name="r_gripper_r_finger_tip_link"       mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/r_finger_tip.dae" />
+
+    <object name="l_gripper_l_finger_link"           mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/l_finger.dae" />
+    <object name="l_gripper_l_finger_tip_link"       mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/l_finger_tip.dae" />
+    <object name="l_gripper_palm_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/gripper_palm.dae" />
+    <object name="l_gripper_r_finger_link"           mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/r_finger.dae" />
+    <object name="l_gripper_r_finger_tip_link"       mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/gripper/r_finger_tip.dae" />
+
+    <object name="l_shoulder_lift_link"              mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/shoulder_lift.dae" />
+    <object name="l_shoulder_pan_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/shoulder_pan.dae" />
+    <object name="l_upper_arm_roll_link"             mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/upper_arm_roll.dae" />
+    <object name="l_elbow_flex_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/upper_arm/elbow_flex.dae" />
+
+    <object name="r_shoulder_lift_link"              mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/shoulder_lift.dae" />
+    <object name="r_shoulder_pan_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/shoulder_pan.dae" />
+    <object name="r_upper_arm_roll_link"             mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/shoulder/upper_arm_roll.dae" />
+    <object name="r_elbow_flex_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/upper_arm/elbow_flex.dae" />
+
+    <object name="r_forearm_roll_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/forearm.dae" />
+    <object name="r_wrist_flex_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/wrist_flex.dae" />
+    <object name="r_wrist_roll_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/wrist_roll.stl" />
+
+    <object name="l_forearm_roll_link"               mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/forearm.dae" />
+    <object name="l_wrist_flex_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/wrist_flex.dae" />
+    <object name="l_wrist_roll_link"                 mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/forearm/wrist_roll.stl" />
+
+    <object name="laser_tilt_mount_link"             mesh_resource="package://toaster_visualizer/mesh/toaster_robots/pr2_joints/tilting_laser/tilting_hokuyo.dae" />
+
+</list_members>

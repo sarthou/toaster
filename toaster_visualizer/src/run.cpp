@@ -61,8 +61,9 @@ class Run {
 
     TiXmlDocument listObj;
     TiXmlDocument listHuman;
-    TiXmlDocument listJoint;
+    TiXmlDocument listHumanJoint;
     TiXmlDocument listRobot;
+    TiXmlDocument listRobotJoint;
 
 public:
 
@@ -99,8 +100,9 @@ public:
 
         openXmlFile("/src/list_obj.xml", listObj);
         openXmlFile("/src/list_human.xml", listHuman);
-        openXmlFile("/src/list_human_joints.xml", listJoint);
+        openXmlFile("/src/list_human_joints.xml", listHumanJoint);
         openXmlFile("/src/list_robot.xml", listRobot);
+        openXmlFile("/src/list_robot_joints.xml", listRobotJoint);
     }
 
     bool openXmlFile(std::string fileName, TiXmlDocument& doc)
@@ -270,9 +272,88 @@ public:
                 robot_list.markers.push_back(mn);
             }
 
-            robot_list.markers.push_back(m);
 
-            ROS_DEBUG("robot %d", m.id);
+            if (msg->robotList[i].meAgent.skeletonJoint.size() == 0) {
+                robot_list.markers.push_back(m);
+
+                ROS_DEBUG("robot %d", m.id);
+            }
+            else //articulated human
+            {
+                std::vector<toaster_msgs::Joint> joints = msg->robotList[i].meAgent.skeletonJoint;
+
+                for (int y = 0; y < joints.size(); y++) {
+                    ROS_DEBUG("joint");
+                    visualization_msgs::Marker markerTempo;
+
+                    std::string name = msg->robotList[i].meAgent.skeletonJoint[y].meEntity.name;
+
+                    //frame id
+                    markerTempo.header.frame_id = "map";
+
+                    //namespace
+                    markerTempo.ns = name;
+                    markerTempo.id = visualizer.id_generator(joints[y].meEntity.name); //creation of an unique id based on marker's name
+
+                    //action
+                    markerTempo.action = visualization_msgs::Marker::ADD;
+
+                    // Pose
+                    markerTempo.pose = joints[y].meEntity.pose;
+
+                    //color
+                    markerTempo.color.r = 1.0;
+                    markerTempo.color.g = 1.0;
+                    markerTempo.color.b = 1.0;
+                    markerTempo.color.a = 1.0;
+
+                    //scale
+                    markerTempo.scale.x = 0.1;
+                    markerTempo.scale.y = 0.1;
+                    markerTempo.scale.z = 0.1;
+
+                    //type of marker
+                    markerTempo.type = 3;
+
+                    TiXmlHandle hdl(&listRobotJoint);
+                    TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
+
+                    std::string name_obj;
+                    std::string mesh_r;
+
+                    while (elem) //for each element of the xml file
+                    {
+                        name_obj = elem->Attribute("name");
+                        mesh_r = elem->Attribute("mesh_resource");
+                        elem = elem->NextSiblingElement();
+
+                        if (name_obj.compare(name) == 0) //if there is a 3d model related to this object
+                        {
+                            markerTempo.scale.x = 1.0;
+                            markerTempo.scale.y = 1.0;
+                            markerTempo.scale.z = 1.0;
+
+                            markerTempo.color.r = 0.0;
+                            markerTempo.color.g = 0.0;
+                            markerTempo.color.b = 0.0;
+                            markerTempo.color.a = 0.0;
+
+                            markerTempo.type = visualization_msgs::Marker::MESH_RESOURCE; //use it as mesh
+                            markerTempo.mesh_resource = mesh_r;
+                            markerTempo.mesh_use_embedded_materials = true;
+
+                            elem = NULL;
+                        }
+                    }
+
+                    if(markerTempo.mesh_resource != "")
+                    {
+                      markerTempo.lifetime = ros::Duration(1.0);
+
+                      robot_list.markers.push_back(markerTempo);
+                    }
+                }
+            }
         }
     }
 
@@ -311,7 +392,8 @@ public:
                 human_list.markers.push_back(m);
 
                 ROS_DEBUG("human %d", m.id);
-            } else //articulated human
+            }
+            else //articulated human
             {
                 std::vector<toaster_msgs::Joint> joints = msg->humanList[i].meAgent.skeletonJoint;
                 visualization_msgs::Marker markerTempo;
@@ -350,7 +432,7 @@ public:
                     //type of marker
                     markerTempo.type = 3;
 
-                    TiXmlHandle hdl(&listJoint);
+                    TiXmlHandle hdl(&listHumanJoint);
                     TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
 
                     std::string name_obj;
