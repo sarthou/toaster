@@ -10,8 +10,6 @@
     <object name="Bob"              mesh_resource="package://toaster_visualizer/mesh/toaster_humans/human.dae" />
     <object name="Seat"             mesh_resource="package://toaster_visualizer/mesh/toaster_humans/humanSeat.dae" />
 
+    <object name="AlexiaSeat"           mesh_resource="package://toaster_visualizer/mesh/toaster_humans/alexia/alexiaSeat.dae" />
 
-
-	
-</list_human>	
-
+</list_human>

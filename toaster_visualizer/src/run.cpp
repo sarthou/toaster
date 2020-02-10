@@ -246,115 +246,46 @@ public:
      * @param msg			reference to receive toaster_msgs::RobotList
      * @return 			void
      */
-    void chatterCallbackRobotList(const toaster_msgs::RobotListStamped::ConstPtr& msg) {
-        robot_list.markers.clear();
+    void chatterCallbackRobotList(const toaster_msgs::RobotListStamped::ConstPtr& msg)
+    {
+      robot_list.markers.clear();
 
-        for (int i = 0; i < msg->robotList.size(); i++) {
-            //non articulated robot
-            visualization_msgs::Marker m = MarkerCreator::defineRobot(msg->robotList[i].meAgent.meEntity.pose,
-                    1.0, msg->robotList[i].meAgent.meEntity.name,
-                    visualizer.id_generator(msg->robotList[i].meAgent.meEntity.name),
-                    listRobot);
+      for(auto& robot : msg->robotList)
+      {
+        visualization_msgs::Marker m = MarkerCreator::defineRobot(robot.meAgent.meEntity.pose,
+                1.0,robot.meAgent.meEntity.name,
+                visualizer.id_generator(robot.meAgent.meEntity.name),
+                listRobot);
 
-            if (visualizer.mustPrintName()) {
-                visualization_msgs::Marker mn = MarkerCreator::defineName(m);
-                mn = MarkerCreator::setPosition(mn, mn.pose.position.x, mn.pose.position.y, mn.pose.position.z + 1);
-                mn = MarkerCreator::setSize(mn, 0, 0, visualizer.getRobotNameScale());
+        if (visualizer.mustPrintName())
+        {
+          visualization_msgs::Marker mn = MarkerCreator::defineName(m);
+          mn = MarkerCreator::setPosition(mn, mn.pose.position.x, mn.pose.position.y, mn.pose.position.z + 1);
+          mn = MarkerCreator::setSize(mn, 0, 0, visualizer.getRobotNameScale());
 
-                //If the robot is moving, we intensify its name color
-                std::map<std::string, double>::const_iterator it = agentMoving_map.find(msg->robotList[i].meAgent.meEntity.id);
-                if (it != agentMoving_map.end())
-                    mn = MarkerCreator::setColor(mn, 0.4 + it->second * 0.6, 0.0, 0.0);
-                else
-                    mn = MarkerCreator::setColor(mn, 0.2, 0.0, 0.0);
+          //If the robot is moving, we intensify its name color
+          std::map<std::string, double>::const_iterator it = agentMoving_map.find(robot.meAgent.meEntity.id);
+          if (it != agentMoving_map.end())
+              mn = MarkerCreator::setColor(mn, 0.4 + it->second * 0.6, 0.0, 0.0);
+          else
+              mn = MarkerCreator::setColor(mn, 0.2, 0.0, 0.0);
 
-
-                robot_list.markers.push_back(mn);
-            }
-
-
-            if (msg->robotList[i].meAgent.skeletonJoint.size() == 0) {
-                robot_list.markers.push_back(m);
-
-                ROS_DEBUG("robot %d", m.id);
-            }
-            else //articulated human
-            {
-                std::vector<toaster_msgs::Joint> joints = msg->robotList[i].meAgent.skeletonJoint;
-
-                for (int y = 0; y < joints.size(); y++) {
-                    ROS_DEBUG("joint");
-                    visualization_msgs::Marker markerTempo;
-
-                    std::string name = msg->robotList[i].meAgent.skeletonJoint[y].meEntity.name;
-
-                    //frame id
-                    markerTempo.header.frame_id = "map";
-
-                    //namespace
-                    markerTempo.ns = name;
-                    markerTempo.id = visualizer.id_generator(joints[y].meEntity.name); //creation of an unique id based on marker's name
-
-                    //action
-                    markerTempo.action = visualization_msgs::Marker::ADD;
-
-                    // Pose
-                    markerTempo.pose = joints[y].meEntity.pose;
-
-                    //color
-                    markerTempo.color.r = 1.0;
-                    markerTempo.color.g = 1.0;
-                    markerTempo.color.b = 1.0;
-                    markerTempo.color.a = 1.0;
-
-                    //scale
-                    markerTempo.scale.x = 0.1;
-                    markerTempo.scale.y = 0.1;
-                    markerTempo.scale.z = 0.1;
-
-                    //type of marker
-                    markerTempo.type = 3;
-
-                    TiXmlHandle hdl(&listRobotJoint);
-                    TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
-
-                    std::string name_obj;
-                    std::string mesh_r;
-
-                    while (elem) //for each element of the xml file
-                    {
-                        name_obj = elem->Attribute("name");
-                        mesh_r = elem->Attribute("mesh_resource");
-                        elem = elem->NextSiblingElement();
-
-                        if (name_obj.compare(name) == 0) //if there is a 3d model related to this object
-                        {
-                            markerTempo.scale.x = 1.0;
-                            markerTempo.scale.y = 1.0;
-                            markerTempo.scale.z = 1.0;
-
-                            markerTempo.color.r = 0.0;
-                            markerTempo.color.g = 0.0;
-                            markerTempo.color.b = 0.0;
-                            markerTempo.color.a = 0.0;
-
-                            markerTempo.type = visualization_msgs::Marker::MESH_RESOURCE; //use it as mesh
-                            markerTempo.mesh_resource = mesh_r;
-                            markerTempo.mesh_use_embedded_materials = true;
-
-                            elem = NULL;
-                        }
-                    }
-
-                    if(markerTempo.mesh_resource != "")
-                    {
-                      markerTempo.lifetime = ros::Duration(1.0);
-
-                      robot_list.markers.push_back(markerTempo);
-                    }
-                }
-            }
+          robot_list.markers.push_back(mn);
         }
+
+        size_t robot_list_size = robot_list.markers.size();
+        for(auto& joint : robot.meAgent.skeletonJoint)
+        {
+          visualization_msgs::Marker markerTempo = MarkerCreator::defineJoint(joint, visualizer.id_generator(joint.meEntity.name));
+          MarkerCreator::setMesh(markerTempo, joint.meEntity.name, &listRobotJoint);
+
+          if(markerTempo.mesh_resource != "") // only display joint with mesh
+            robot_list.markers.push_back(markerTempo);
+        }
+
+        if(robot_list.markers.size() == robot_list_size)
+          robot_list.markers.push_back(m); // display the full model if no joint is displayed
+      }
     }
 
     /**
@@ -363,118 +294,45 @@ public:
      * @param msg			reference to receive toaster_msgs::HumanList
      * @return 			void
      */
-    void chatterCallbackHumanList(const toaster_msgs::HumanListStamped::ConstPtr& msg) {
-        human_list.markers.clear();
+    void chatterCallbackHumanList(const toaster_msgs::HumanListStamped::ConstPtr& msg)
+    {
+      human_list.markers.clear();
 
-        for (int i = 0; i < msg->humanList.size(); i++) {
-            //non articulated human
-            visualization_msgs::Marker m = MarkerCreator::defineHuman(msg->humanList[i].meAgent.meEntity.pose,
-                    1.0, msg->humanList[i].meAgent.meEntity.name,
-                    visualizer.id_generator(msg->humanList[i].meAgent.meEntity.name),
-                    listHuman);
+      for(auto& human : msg->humanList)
+      {
+        visualization_msgs::Marker m = MarkerCreator::defineHuman(human.meAgent.meEntity.pose,
+                1.0, human.meAgent.meEntity.name,
+                visualizer.id_generator(human.meAgent.meEntity.name),
+                listHuman);
 
-            if (visualizer.mustPrintName()) {
-                visualization_msgs::Marker mn = MarkerCreator::defineName(m);
-                mn = MarkerCreator::setPosition(mn, mn.pose.position.x, mn.pose.position.y, mn.pose.position.z + 1);
-                mn = MarkerCreator::setSize(mn, 0, 0, visualizer.getHumanNameScale());
+        if (visualizer.mustPrintName())
+        {
+          visualization_msgs::Marker mn = MarkerCreator::defineName(m);
+          mn = MarkerCreator::setPosition(mn, mn.pose.position.x, mn.pose.position.y, mn.pose.position.z + 1);
+          mn = MarkerCreator::setSize(mn, 0, 0, visualizer.getHumanNameScale());
 
-                //If the human is moving, we intensify its color
-                std::map<std::string, double>::const_iterator it = agentMoving_map.find(msg->humanList[i].meAgent.meEntity.id);
-                if (it != agentMoving_map.end())
-                    mn = MarkerCreator::setColor(mn, 0.0, 0.4 + it->second * 0.6, 0.0);
-                else
-                    mn = MarkerCreator::setColor(mn, 0.0, 0.2, 0.0);
+          //If the human is moving, we intensify its color
+          std::map<std::string, double>::const_iterator it = agentMoving_map.find(human.meAgent.meEntity.id);
+          if (it != agentMoving_map.end())
+            mn = MarkerCreator::setColor(mn, 0.0, 0.4 + it->second * 0.6, 0.0);
+          else
+            mn = MarkerCreator::setColor(mn, 0.0, 0.2, 0.0);
 
-                human_list.markers.push_back(mn);
-            }
-
-            if (msg->humanList[i].meAgent.skeletonJoint.size() == 0) {
-                human_list.markers.push_back(m);
-
-                ROS_DEBUG("human %d", m.id);
-            }
-            else //articulated human
-            {
-                std::vector<toaster_msgs::Joint> joints = msg->humanList[i].meAgent.skeletonJoint;
-                visualization_msgs::Marker markerTempo;
-
-                int scale = 1;
-
-                for (int y = 0; y < joints.size(); y++) {
-                    ROS_DEBUG("joint");
-
-                    std::string name = msg->humanList[i].meAgent.skeletonJoint[y].meEntity.name;
-
-                    //frame id
-                    markerTempo.header.frame_id = "map";
-
-                    //namespace
-                    markerTempo.ns = name;
-                    markerTempo.id = visualizer.id_generator(joints[y].meEntity.name); //creation of an unique id based on marker's name
-
-                    //action
-                    markerTempo.action = visualization_msgs::Marker::ADD;
-
-                    // Pose
-                    markerTempo.pose = joints[y].meEntity.pose;
-
-                    //color
-                    markerTempo.color.r = 1.0;
-                    markerTempo.color.g = 1.0;
-                    markerTempo.color.b = 1.0;
-                    markerTempo.color.a = 1.0;
-
-                    //scale
-                    markerTempo.scale.x = 0.1 * scale;
-                    markerTempo.scale.y = 0.1 * scale;
-                    markerTempo.scale.z = 0.1 * scale;
-
-                    //type of marker
-                    markerTempo.type = 3;
-
-                    TiXmlHandle hdl(&listHumanJoint);
-                    TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
-
-                    std::string name_obj;
-                    std::string mesh_r;
-
-                    while (elem) //for each element of the xml file
-                    {
-                        name_obj = elem->Attribute("name");
-                        mesh_r = elem->Attribute("mesh_resource");
-                        elem = elem->NextSiblingElement();
-
-                        if (name_obj.compare(name) == 0) //if there is a 3d model related to this object
-                        {
-                            markerTempo.scale.x = scale;
-                            markerTempo.scale.y = scale;
-                            markerTempo.scale.z = scale;
-
-
-                            markerTempo.color.r = 0.0;
-                            markerTempo.color.g = 0.0;
-                            markerTempo.color.b = 0.0;
-                            markerTempo.color.a = 0.0;
-
-                            markerTempo.type = visualization_msgs::Marker::MESH_RESOURCE; //use it as mesh
-
-                            if (isSeating(msg->humanList[i]) && name == "base")
-                                markerTempo.mesh_resource = "package://toaster_visualizer/mesh/toaster_humans/mocapMorse/baseSeat.dae"; //using 3d human model
-                             else
-                                markerTempo.mesh_resource = mesh_r;
-
-                            markerTempo.mesh_use_embedded_materials = true;
-
-                            elem = NULL;
-                        }
-                    }
-
-                    markerTempo.lifetime = ros::Duration(1.0);
-
-                    human_list.markers.push_back(markerTempo);
-                }
-            }
+          human_list.markers.push_back(mn);
         }
+
+        size_t human_list_size = human_list.markers.size();
+        for(auto& joint : human.meAgent.skeletonJoint)
+        {
+          visualization_msgs::Marker markerTempo = MarkerCreator::defineJoint(joint, visualizer.id_generator(joint.meEntity.name));
+          MarkerCreator::setMesh(markerTempo, joint.meEntity.name, &listHumanJoint);
+
+          human_list.markers.push_back(markerTempo);
+        }
+
+        if(human_list.markers.size() == human_list_size)
+          human_list.markers.push_back(m); // display the full model if no joint is displayed
+      }
     }
 
     void chatterCallbackFactList(const toaster_msgs::FactList::ConstPtr& msg)

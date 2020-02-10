@@ -293,35 +293,11 @@ visualization_msgs::Marker MarkerCreator::defineHuman(geometry_msgs::Pose pose, 
     //type of marker
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
 
-    TiXmlHandle hdl(&listHuman);
-    TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
+    if (pose.position.z < -0.7) //human is seating
+      MarkerCreator::setMesh(marker, name + "Seat", &listHuman);
 
-    std::string name_obj;
-    std::string mesh_r;
-
-    while (elem) //for each element of the xml file
-    {
-        name_obj = elem->Attribute("name");
-        mesh_r = elem->Attribute("mesh_resource");
-        elem = elem->NextSiblingElement();
-
-        if (name_obj.compare(name) == 0) //if there is a 3d model relative to this human
-        {
-            marker.mesh_resource = mesh_r;
-            marker.mesh_use_embedded_materials = true;
-
-            elem = NULL;
-        }
-	else
-	{
-            if (pose.position.z < -0.7) //human is seating
-                marker.mesh_resource = "package://toaster_visualizer/mesh/toaster_humans/humanSeat.dae"; //using 3d human model
-            else
-                marker.mesh_resource = "package://toaster_visualizer/mesh/toaster_humans/human.dae"; //using 3d human model
-
-            marker.mesh_use_embedded_materials = true;
-        }
-    }
+    if(marker.mesh_resource == "")
+      MarkerCreator::setMesh(marker, name, &listHuman);
 
     marker.lifetime = ros::Duration(1.0);
 
@@ -457,6 +433,68 @@ visualization_msgs::Marker MarkerCreator::defineArrow(visualization_msgs::Marker
 
     return marker;
 }
+
+visualization_msgs::Marker MarkerCreator::defineJoint(const toaster_msgs::Joint& joint, int id)
+{
+  visualization_msgs::Marker marker;
+
+  marker.header.frame_id = "map";
+
+  marker.ns = joint.meEntity.name;
+  marker.id = id;
+  marker.action = visualization_msgs::Marker::ADD;
+
+  marker.pose = joint.meEntity.pose;
+
+  marker.color.r = 1.0;
+  marker.color.g = 1.0;
+  marker.color.b = 1.0;
+  marker.color.a = 1.0;
+
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.1 ;
+
+  marker.type = 3;
+  marker.lifetime = ros::Duration(1.0);
+
+  return marker;
+}
+
+void MarkerCreator::setMesh(visualization_msgs::Marker& marker, const std::string& resource_name, TiXmlDocument* document)
+{
+  TiXmlHandle hdl(document);
+  TiXmlElement *elem = hdl.FirstChildElement().FirstChildElement().Element();
+
+  std::string name_obj;
+  std::string mesh_r;
+
+  while (elem) //for each element of the xml file
+  {
+      name_obj = elem->Attribute("name");
+      mesh_r = elem->Attribute("mesh_resource");
+      elem = elem->NextSiblingElement();
+
+      if (name_obj.compare(resource_name) == 0) //if there is a 3d model related to this object
+      {
+          marker.scale.x = 1.0;
+          marker.scale.y = 1.0;
+          marker.scale.z = 1.0;
+
+          marker.color.r = 0.0;
+          marker.color.g = 0.0;
+          marker.color.b = 0.0;
+          marker.color.a = 0.0;
+
+          marker.type = visualization_msgs::Marker::MESH_RESOURCE; //use it as mesh
+          marker.mesh_resource = mesh_r;
+          marker.mesh_use_embedded_materials = true;
+
+          elem = NULL;
+      }
+  }
+}
+
   /////////////////////////////
   /*MARKERS UTILITY FUNCTIONS*/
   /////////////////////////////

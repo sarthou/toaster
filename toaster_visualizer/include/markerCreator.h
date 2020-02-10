@@ -8,6 +8,8 @@
 #include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/Quaternion.h>
 
+#include "toaster_msgs/Joint.h"
+
 #include <tinyxml.h>
 
 #ifndef MARKERCREATOR_H
@@ -75,6 +77,10 @@ public:
   static visualization_msgs::Marker defineRobot(geometry_msgs::Pose pose, double scale, std::string name, int id, TiXmlDocument& listRobot);
 
   static visualization_msgs::Marker defineArrow(visualization_msgs::Marker& sub, visualization_msgs::Marker& targ, double confidence, bool distance, int id);
+
+  static visualization_msgs::Marker defineJoint(const toaster_msgs::Joint& joint, int id);
+
+  static void setMesh(visualization_msgs::Marker& marker, const std::string& resource_name, TiXmlDocument* document);
 
   /////////////////////////////
   /*MARKERS UTILITY FUNCTIONS*/

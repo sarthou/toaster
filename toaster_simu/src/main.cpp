@@ -13,7 +13,6 @@
 #include <toaster_msgs/ObjectListStamped.h>
 #include <boost/algorithm/string/predicate.hpp>
 
-
 //Services
 #include <toaster_msgs/SetEntityPose.h>
 #include <toaster_msgs/AddEntity.h>

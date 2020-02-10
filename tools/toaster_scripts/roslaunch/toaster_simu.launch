@@ -12,4 +12,6 @@
         <!-- rosparam command="load" file="$(find database_manager)/params/Database.yaml" /-->
 	<!-- node name="run_server" pkg="database_manager" type="run_server" output="screen"/-->  <!-- Launch the toaster database -->
 	 <node name="rviz" pkg="rviz" type="rviz" output="screen"/>  <!-- Launch rviz -->
+
+	<node pkg="tf" type="static_transform_publisher" name="pr2_broadcaster" args="1 0 0 0 0 0 1 map base_footprint 100"/>
 </launch>
