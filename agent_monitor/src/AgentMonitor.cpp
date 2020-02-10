@@ -94,7 +94,7 @@ void AgentMonitor::computeLookingFacts(Agent* agent, double lookTwdDeltaDist, do
                                 agent->getId(),
                                 mapTRBEntity_[agent->getId()].back());
 
-  mapIdValue = LookingFact::compute(mapTRBEntity_, agent->getId(), lookTwdDeltaDist*0.5, lookTwdAngularAperture*0.25);
+  mapIdValue = LookingFact::compute(mapTRBEntity_, agent->getId(), lookTwdDeltaDist*0.75, lookTwdAngularAperture*0.25);
   LookingFact::createAtFact(mapIdValue, factList_msg,
                                 lookTwdAngularAperture*0.25,
                                 agent->getId(),

@@ -258,7 +258,7 @@ visualization_msgs::Marker MarkerCreator::defineName(visualization_msgs::Marker&
   return nameMarker;
 }
 
-visualization_msgs::Marker MarkerCreator::defineHuman(geometry_msgs::Pose pose, double scale, std::string name, int id, TiXmlDocument& listHuman) {
+visualization_msgs::Marker MarkerCreator::defineHuman(geometry_msgs::Pose pose, double scale, const std::string& name, const std::string ns, int id, TiXmlDocument& listHuman) {
 
     //declaration
     double roll, pitch, yaw;
@@ -268,10 +268,8 @@ visualization_msgs::Marker MarkerCreator::defineHuman(geometry_msgs::Pose pose, 
     marker.header.frame_id = "map";
 
     //namespace
-    std::ostringstream nameSpace;
-    nameSpace << name;
-    marker.ns = nameSpace.str();
-    marker.text = nameSpace.str();
+    marker.ns = ns;
+    marker.text = ns;
     marker.id = id; //creation of an unique id based on marker's name
 
     //action
@@ -378,14 +376,9 @@ visualization_msgs::Marker MarkerCreator::defineArrow(visualization_msgs::Marker
     //frame id
     marker.header.frame_id = "map";
 
-    //namespace
-    std::ostringstream nameSpace;
-    std::string subtype = "distance";
-    if (!distance)
-        subtype = "direction";
-    nameSpace << sub.ns << " MvTwd " << subtype << targ.ns;
-    marker.ns = nameSpace.str();
-    marker.id = id; //id_generator(nameSpace.str()); //creation of an unique id based on marker's name
+    std::string subtype = distance ? "distance" : "direction";
+    marker.ns = sub.text + " MvTwd " + subtype;
+    marker.id = id; //creation of an unique id based on marker's name
 
     //action
     marker.action = visualization_msgs::Marker::ADD;
@@ -396,11 +389,11 @@ visualization_msgs::Marker MarkerCreator::defineArrow(visualization_msgs::Marker
 
     point0.x = sub.pose.position.x;
     point0.y = sub.pose.position.y;
-    point0.z = sub.pose.position.z;
+    point0.z = 0; //sub.pose.position.z;
 
     point1.x = targ.pose.position.x;
     point1.y = targ.pose.position.y;
-    point1.z = targ.pose.position.z;
+    point1.z = 0; //targ.pose.position.z;
 
     if (distance) {
         point0.x += 0.1;
@@ -408,7 +401,6 @@ visualization_msgs::Marker MarkerCreator::defineArrow(visualization_msgs::Marker
         point1.y += 0.1;
         point1.x += 0.1;
     }
-
 
     marker.points.push_back(point0);
     marker.points.push_back(point1);

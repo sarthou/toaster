@@ -44,3 +44,17 @@ int Visualizer::id_generator(std::string name) {
         return idCpt_++;
     }
 }
+
+bool Visualizer::findInArray(const visualization_msgs::MarkerArray& array, visualization_msgs::Marker& res_marker, const std::string id)
+{
+  for (auto& marker : array.markers)
+  {
+    if (marker.text.compare(id) == 0)
+    {
+      res_marker = marker;
+      return true;
+    }
+  }
+
+  return false;
+}

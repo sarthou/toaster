@@ -2,6 +2,9 @@
 #include "toaster_msgs/Empty.h"
 #include "toaster_msgs/Scale.h"
 
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
+
 #include <string>
 
 #ifndef VISUALIZER_H
@@ -25,6 +28,8 @@ public:
    * @return id		new identifier or target's identifier if his name already have been assigned to an identifier
    */
   int id_generator(std::string name);
+
+  bool findInArray(const visualization_msgs::MarkerArray& array, visualization_msgs::Marker& res_marker, const std::string id);
 
 private:
   std::vector<std::string> nameList_;

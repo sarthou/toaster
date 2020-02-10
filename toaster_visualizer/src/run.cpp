@@ -302,6 +302,7 @@ public:
       {
         visualization_msgs::Marker m = MarkerCreator::defineHuman(human.meAgent.meEntity.pose,
                 1.0, human.meAgent.meEntity.name,
+                human.meAgent.meEntity.id,
                 visualizer.id_generator(human.meAgent.meEntity.name),
                 listHuman);
 
@@ -326,6 +327,7 @@ public:
         {
           visualization_msgs::Marker markerTempo = MarkerCreator::defineJoint(joint, visualizer.id_generator(joint.meEntity.name));
           MarkerCreator::setMesh(markerTempo, joint.meEntity.name, &listHumanJoint);
+          markerTempo.ns = human.meAgent.meEntity.id;
 
           human_list.markers.push_back(markerTempo);
         }
@@ -351,110 +353,28 @@ public:
         for (int iFact = 0; iFact < msg->factList.size(); iFact++) {
             if (msg->factList[iFact].property == "IsMoving")
                 agentMoving_map[msg->factList[iFact].subjectId] = msg->factList[iFact].confidence;
-            else if (msg->factList[iFact].property == "IsMovingToward") {
+            else if (msg->factList[iFact].property == "IsMovingToward")
+            {
+              visualization_msgs::Marker sub;
+              visualization_msgs::Marker targ;
+              visualization_msgs::Marker arrow;
 
-                bool foundSub = false;
-                bool foundTarg = false;
-                visualization_msgs::Marker sub;
-                visualization_msgs::Marker targ;
-                visualization_msgs::Marker arrow;
+              if(!visualizer.findInArray(human_list, sub, msg->factList[iFact].subjectId))
+                if(!visualizer.findInArray(robot_list, sub, msg->factList[iFact].subjectId))
+                  continue; // subject not found
 
-                //Let's look for the subject position:
-                for (unsigned int i = 0; i < human_list.markers.size(); i++) {
-                    if (human_list.markers[i].ns.compare(msg->factList[iFact].subjectId) == 0) {
-                        sub = human_list.markers[i];
-                        foundSub = true;
-                        break;
-                    }
-                }
+              if(!visualizer.findInArray(human_list, targ, msg->factList[iFact].targetId))
+                if(!visualizer.findInArray(robot_list, targ, msg->factList[iFact].targetId))
+                  if(!visualizer.findInArray(obj_list, targ, msg->factList[iFact].targetId))
+                    continue; // target not found
 
-                if (foundSub) {
-                    for (unsigned int i = 0; i < human_list.markers.size(); i++) {
-
-                        if (human_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-
-                            targ = human_list.markers[i];
-                            foundTarg = true;
-                            break;
-                        }
-                    }
-
-                    if (!foundTarg) {
-                        for (unsigned int i = 0; i < robot_list.markers.size(); i++) {
-                            if (robot_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-                                targ = robot_list.markers[i];
-                                foundTarg = true;
-                                break;
-                            }
-                        }
-                        if (!foundTarg) {
-                            for (unsigned int i = 0; i < obj_list.markers.size(); i++) {
-                                if (obj_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-                                    targ = obj_list.markers[i];
-                                    foundTarg = true;
-                                    break;
-                                }
-                            }
-                            if (!foundTarg) {
-                                continue;
-                            }
-                        }
-                    }
-
-
-                } else {
-                    for (unsigned int i = 0; i < robot_list.markers.size(); i++) {
-                        if (robot_list.markers[i].ns.compare(msg->factList[iFact].subjectId) == 0) {
-                            sub = human_list.markers[i];
-                            foundSub = true;
-                            break;
-                        }
-                    }
-
-                    if (foundSub) {
-                        for (unsigned int i = 0; i < human_list.markers.size(); i++) {
-                            if (human_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-                                targ = human_list.markers[i];
-                                foundTarg = true;
-                                break;
-                            }
-                        }
-                        if (!foundTarg) {
-                            for (unsigned int i = 0; i < robot_list.markers.size(); i++) {
-                                if (robot_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-                                    targ = robot_list.markers[i];
-                                    foundTarg = true;
-                                    break;
-                                }
-                            }
-                            if (!foundTarg) {
-                                for (unsigned int i = 0; i < obj_list.markers.size(); i++) {
-                                    if (obj_list.markers[i].ns.compare(msg->factList[iFact].targetId) == 0) {
-                                        targ = human_list.markers[i];
-                                        foundTarg = true;
-                                        break;
-                                    }
-                                }
-                                if (!foundTarg) {
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Create arrow
-                if (foundTarg && foundSub) {
-                  bool distance = msg->factList[iFact].subProperty.compare("distance") == 0;
-                  std::ostringstream nameSpace;
-                  std::string subtype = "distance";
-                  if (!distance)
-                      subtype = "direction";
-                  nameSpace << sub.ns << " MvTwd " << subtype << targ.ns;
-                  arrow = MarkerCreator::defineArrow(sub, targ, msg->factList[iFact].confidence,
-                                                    distance, visualizer.id_generator(nameSpace.str()));
-                  arrow_list.markers.push_back(arrow);
-                }
+              // Create arrow
+              bool distance = msg->factList[iFact].subProperty.compare("distance") == 0;
+              std::string subtype = distance ? "distance" : "direction";
+              std::string nameSpace = sub.text + " MvTwd " + subtype + targ.text;
+              arrow = MarkerCreator::defineArrow(sub, targ, msg->factList[iFact].confidence,
+                                                distance, visualizer.id_generator(nameSpace));
+              arrow_list.markers.push_back(arrow);
             }
         }
     }

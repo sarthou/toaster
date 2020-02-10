@@ -63,7 +63,7 @@ public:
    * @param name 		marker's name
    * @return marker 	mesh marker of human
    */
-  static visualization_msgs::Marker defineHuman(geometry_msgs::Pose pose, double scale, std::string name, int id, TiXmlDocument& listHuman);
+  static visualization_msgs::Marker defineHuman(geometry_msgs::Pose pose, double scale, const std::string& name, const std::string ns, int id, TiXmlDocument& listHuman);
 
   /**
    * create a robot marker
