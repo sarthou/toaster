@@ -108,12 +108,19 @@ void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack_ros::or_pose_
             tf::Matrix3x3 m(q);
             m.getEulerYPR(yaw, pitch, roll);
 
-            if (!torso_) {
+            if (!torso_)
+            {
+              Mobility curHumanMobility = FULL;
+              curHuman->setId(humId);
+              curHuman->setName(humId);
+
+              curHuman->setMobility(curHumanMobility);
+
                 //set human position
                 bg::model::point<double, 3, bg::cs::cartesian> humanPosition;
                 humanPosition.set<0>(msg->pos[0].x + offset_x);
                 humanPosition.set<1>(msg->pos[0].y + offset_y);
-                humanPosition.set<2>(msg->pos[0].z + offset_z - 1.48);
+                humanPosition.set<2>(0/*msg->pos[0].z + offset_z - 1.48*/);
 
                 //set the human orientation
                 std::vector<double> humanOrientation;
@@ -190,19 +197,18 @@ void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack_ros::or_pose_
         std::string humId = "HERAKLES_HUMAN1";
         std::string jointName = "rightHand";
 
-        if (lastConfig_.find(humId) == lastConfig_.end()) {
-            // We wait that head is detected so that the human is created
-            return;
-        } else {
-            curHuman = lastConfig_[humId];
-        }
+        if (lastConfig_.find(humId) == lastConfig_.end())
+          return; // We wait that head is detected so that the human is created
+        else
+          curHuman = lastConfig_[humId];
 
-        if (curHuman->skeleton_.find(jointName) == curHuman->skeleton_.end()) {
-            curJoint = new Joint(jointName, humId);
-            curJoint->setName(jointName);
-        } else {
-            curJoint = curHuman->skeleton_[jointName];
+        if (curHuman->skeleton_.find(jointName) == curHuman->skeleton_.end())
+        {
+          curJoint = new Joint(jointName, humId);
+          curJoint->setName(jointName);
         }
+        else
+          curJoint = curHuman->skeleton_[jointName];
 
         if (msg->pos.size() != 0) {
             bg::model::point<double, 3, bg::cs::cartesian> jointPosition;
@@ -230,7 +236,6 @@ void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack_ros::or_pose_
 
     } catch (tf::TransformException ex) {
         ROS_ERROR("[AdreamMocap Hand transfor] %s", ex.what());
-
     }
 }
 
@@ -264,12 +269,17 @@ void AdreamMocapHumanReader::optitrackCallbackTorso(const optitrack_ros::or_pose
 
         if (msg->pos.size() != 0) {
 
+          Mobility curHumanMobility = FULL;
+          curHuman->setId(humId);
+          curHuman->setName(humId);
 
+          curHuman->setMobility(curHumanMobility);
+          
             //set human position
             bg::model::point<double, 3, bg::cs::cartesian> humanPosition;
             humanPosition.set<0>(msg->pos[0].x + offset_x);
             humanPosition.set<1>(msg->pos[0].y + offset_y);
-            humanPosition.set<2>(msg->pos[0].z + offset_z - 1.31);
+            humanPosition.set<2>(0/*msg->pos[0].z + offset_z - 1.31*/);
 
             //set the human orientation
             std::vector<double> humanOrientation;
