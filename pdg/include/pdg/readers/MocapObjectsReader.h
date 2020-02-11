@@ -16,7 +16,7 @@
 #include <ros/ros.h>
 #include <string>
 #include <vector>
-#include "optitrack/or_pose_estimator_state.h"
+#include "optitrack_ros/or_pose_estimator_state.h"
 
 class MocapObjectsReader {
 public:

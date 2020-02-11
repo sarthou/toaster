@@ -52,7 +52,7 @@ void MocapObjectReader::init(ros::NodeHandle* node, std::string topic, std::stri
     }
 }
 
-void MocapObjectReader::optitrackCallback(const optitrack::or_pose_estimator_state::ConstPtr & msg)
+void MocapObjectReader::optitrackCallback(const optitrack_ros::or_pose_estimator_state::ConstPtr & msg)
 {
   if(activated_)
   {
@@ -71,7 +71,7 @@ void MocapObjectReader::optitrackCallback(const optitrack::or_pose_estimator_sta
 
         if (msg->pos.size() != 0) {
 
-            tf::Quaternion q(msg->pos[0].qx, msg->pos[0].qy, msg->pos[0].qz, msg->pos[0].qw);
+            tf::Quaternion q(msg->att[0].qx, msg->att[0].qy, msg->att[0].qz, msg->att[0].qw);
             double roll, pitch, yaw;
             tf::Matrix3x3 m(q);
             m.getEulerYPR(yaw, pitch, roll);

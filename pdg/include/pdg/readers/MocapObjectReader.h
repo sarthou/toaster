@@ -14,7 +14,7 @@
 
 #include <ros/ros.h>
 #include <string>
-#include "optitrack/or_pose_estimator_state.h"
+#include "optitrack_ros/or_pose_estimator_state.h"
 
 class MocapObjectReader : public ObjectReader {
 public:
@@ -32,7 +32,7 @@ private:
     double offset_z;
     std::string id_;
     ros::Subscriber sub_;
-    void optitrackCallback(const optitrack::or_pose_estimator_state::ConstPtr& msg);
+    void optitrackCallback(const optitrack_ros::or_pose_estimator_state::ConstPtr& msg);
 };
 
 #endif	/* MOCAPOBJECTREADER_H */

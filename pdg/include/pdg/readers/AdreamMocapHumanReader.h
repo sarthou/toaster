@@ -14,7 +14,7 @@
 
 #include <ros/ros.h>
 #include <string>
-#include "optitrack/or_pose_estimator_state.h"
+#include "optitrack_ros/or_pose_estimator_state.h"
 
 class AdreamMocapHumanReader : public HumanReader {
 public:
@@ -37,9 +37,9 @@ private:
     ros::Subscriber subTorso_;
     ros::Subscriber subHead_;
     ros::Subscriber subHand_;
-    void optitrackCallbackTorso(const optitrack::or_pose_estimator_state::ConstPtr& msg);
-    void optitrackCallbackHead(const optitrack::or_pose_estimator_state::ConstPtr& msg);
-    void optitrackCallbackHand(const optitrack::or_pose_estimator_state::ConstPtr& msg);
+    void optitrackCallbackTorso(const optitrack_ros::or_pose_estimator_state::ConstPtr& msg);
+    void optitrackCallbackHead(const optitrack_ros::or_pose_estimator_state::ConstPtr& msg);
+    void optitrackCallbackHand(const optitrack_ros::or_pose_estimator_state::ConstPtr& msg);
 };
 
 #endif	/* ADREAMMOCAPHUMANREADER_H */

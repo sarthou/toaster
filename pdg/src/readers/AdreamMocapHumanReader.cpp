@@ -59,34 +59,32 @@ void AdreamMocapHumanReader::Publish(struct toasterList_t& list_msg)
 {
   if(activated_)
   {
-    for (std::map<std::string, Human*>::iterator it = lastConfig_.begin(); it != lastConfig_.end(); ++it) {
-        if (isPresent(it->first))
+    for (std::map<std::string, Human*>::iterator it = lastConfig_.begin(); it != lastConfig_.end(); ++it)
+    {
+      if (isPresent(it->first))
+      {
+        toaster_msgs::Fact fact_msg = DefaultFactMsg(it->first, it->second->getTime());
+        list_msg.fact_msg.factList.push_back(fact_msg);
+
+        toaster_msgs::Human human_msg;
+        fillEntity(it->second, human_msg.meAgent.meEntity);
+
+        for (std::map<std::string, Joint*>::iterator itJoint = lastConfig_[it->first]->skeleton_.begin(); itJoint != lastConfig_[it->first]->skeleton_.end(); ++itJoint)
         {
-            toaster_msgs::Fact fact_msg = DefaultFactMsg(it->first, it->second->getTime());
-            list_msg.fact_msg.factList.push_back(fact_msg);
+          toaster_msgs::Joint joint_msg;
+          human_msg.meAgent.skeletonNames.push_back(itJoint->first);
+          fillEntity((itJoint->second), joint_msg.meEntity);
+          joint_msg.jointOwner = it->first;
 
-            //Human
-            toaster_msgs::Human human_msg;
-            fillEntity(it->second, human_msg.meAgent.meEntity);
-
-            //if (humanFullConfig_) {
-            for (std::map<std::string, Joint*>::iterator itJoint = lastConfig_[it->first]->skeleton_.begin(); itJoint != lastConfig_[it->first]->skeleton_.end(); ++itJoint) {
-                toaster_msgs::Joint joint_msg;
-                human_msg.meAgent.skeletonNames.push_back(itJoint->first);
-                fillEntity((itJoint->second), joint_msg.meEntity);
-                joint_msg.jointOwner = it->first;
-
-                human_msg.meAgent.skeletonJoint.push_back(joint_msg);
-
-            }
-            //}
-            list_msg.human_msg.humanList.push_back(human_msg);
+          human_msg.meAgent.skeletonJoint.push_back(joint_msg);
         }
+        list_msg.human_msg.humanList.push_back(human_msg);
+      }
     }
   }
 }
 
-void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack::or_pose_estimator_state::ConstPtr & msg) {
+void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack_ros::or_pose_estimator_state::ConstPtr & msg) {
 
     ros::Time now = ros::Time::now();
     Human* curHuman;
@@ -95,16 +93,17 @@ void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack::or_pose_esti
     try {
         std::string humId = "HERAKLES_HUMAN1";
         //create a new human with the same id as the message
-        if (lastConfig_.find(humId) == lastConfig_.end()) {
-            curHuman = new Human(humId);
-            curHuman->setName(humId);
-        } else {
-            curHuman = lastConfig_[humId];
+        if (lastConfig_.find(humId) == lastConfig_.end())
+        {
+          curHuman = new Human(humId);
+          curHuman->setName(humId);
         }
+        else
+          curHuman = lastConfig_[humId];
 
         if (msg->pos.size() != 0) {
 
-            tf::Quaternion q(msg->pos[0].qx, msg->pos[0].qy, msg->pos[0].qz, msg->pos[0].qw);
+            tf::Quaternion q(msg->att[0].qx, msg->att[0].qy, msg->att[0].qz, msg->att[0].qw);
             double roll, pitch, yaw;
             tf::Matrix3x3 m(q);
             m.getEulerYPR(yaw, pitch, roll);
@@ -134,12 +133,13 @@ void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack::or_pose_esti
                 //update the base
                 std::string jointName = "base";
 
-                if (curHuman->skeleton_.find(jointName) == curHuman->skeleton_.end()) {
-                    curJoint = new Joint(jointName, humId);
-                    curJoint->setName(jointName);
-                } else {
-                    curJoint = curHuman->skeleton_[jointName];
+                if (curHuman->skeleton_.find(jointName) == curHuman->skeleton_.end())
+                {
+                  curJoint = new Joint(jointName, humId);
+                  curJoint->setName(jointName);
                 }
+                else
+                  curJoint = curHuman->skeleton_[jointName];
 
                 curJoint->setPosition(humanPosition);
                 curJoint->setOrientation(humanOrientation);
@@ -179,7 +179,7 @@ void AdreamMocapHumanReader::optitrackCallbackHead(const optitrack::or_pose_esti
     }
 }
 
-void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack::or_pose_estimator_state::ConstPtr & msg) {
+void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack_ros::or_pose_estimator_state::ConstPtr & msg) {
 
     ros::Time now = ros::Time::now();
     Human* curHuman;
@@ -212,7 +212,7 @@ void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack::or_pose_esti
 
             std::vector<double> jointOrientation;
 
-            tf::Quaternion q(msg->pos[0].qx, msg->pos[0].qy, msg->pos[0].qz, msg->pos[0].qw);
+            tf::Quaternion q(msg->att[0].qx, msg->att[0].qy, msg->att[0].qz, msg->att[0].qw);
             double roll, pitch, yaw;
             tf::Matrix3x3 m(q);
             m.getEulerYPR(yaw, pitch, roll);
@@ -234,7 +234,7 @@ void AdreamMocapHumanReader::optitrackCallbackHand(const optitrack::or_pose_esti
     }
 }
 
-void AdreamMocapHumanReader::optitrackCallbackTorso(const optitrack::or_pose_estimator_state::ConstPtr & msg) {
+void AdreamMocapHumanReader::optitrackCallbackTorso(const optitrack_ros::or_pose_estimator_state::ConstPtr & msg) {
 
     ros::Time now = ros::Time::now();
     Human* curHuman;
@@ -276,7 +276,7 @@ void AdreamMocapHumanReader::optitrackCallbackTorso(const optitrack::or_pose_est
 
             //transform the pose message
 
-            tf::Quaternion q(msg->pos[0].qx, msg->pos[0].qy, msg->pos[0].qz, msg->pos[0].qw);
+            tf::Quaternion q(msg->att[0].qx, msg->att[0].qy, msg->att[0].qz, msg->att[0].qw);
             double roll, pitch, yaw;
             tf::Matrix3x3 m(q);
             m.getEulerYPR(yaw, pitch, roll);

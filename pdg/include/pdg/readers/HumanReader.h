@@ -33,7 +33,7 @@ class HumanReader : public Reader<Human>
     void setFullConfig(std::string param)
     {
       if (node_->hasParam(param))
-        node_->getParam(param, fullHuman_); 
+        node_->getParam(param, fullHuman_);
     }
 
   public:
