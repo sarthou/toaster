@@ -17,11 +17,16 @@ map<string, double> Motion2D::computeToward(map<string, TRBuffer < Entity* > > m
   {
     if (it->first != agentMonitored)
     {
-      double unused = 0;
-      double curConf = MathFunctions::isInAngle(getEntityOrJoint(mapEnts[agentMonitored].back(), jointName),
-                                                it->second.back(), towardAngle, angleThreshold, unused);
-      if (curConf > 0.0)
-        towardConfidence[it->first] = curConf;
+      double relative_angle = MathFunctions::relativeAngle(getEntityOrJoint(mapEnts[agentMonitored].back(), jointName),
+                                                           it->second.back(), towardAngle);
+      while(relative_angle > M_PI)
+        relative_angle -= 2*M_PI;
+      while(relative_angle < -M_PI)
+        relative_angle += 2*M_PI;
+
+      double half_angleThreshold = angleThreshold/2.;
+      if(fabs(relative_angle) <= half_angleThreshold)
+        towardConfidence[it->first] = (half_angleThreshold - fabs(relative_angle)) / half_angleThreshold;
     }
   }
   return towardConfidence;
@@ -37,15 +42,15 @@ double Motion2D::computeDirection(TRBuffer< Entity* > confBuffer,
     Entity* entNew = getEntityOrJoint(confBuffer.getDataFromIndex(confBuffer.size() - 1), jointName);
 
     int index = confBuffer.getIndexAfter(timeOld);
-
     Entity* entOld = getEntityOrJoint(confBuffer.getDataFromIndex(index), jointName);
+
     double towardAngle = acos(fabs(entOld->getPosition().get<0>() - entNew->getPosition().get<0>())
             / bg::distance(MathFunctions::convert3dTo2d(entOld->getPosition()),
             MathFunctions::convert3dTo2d(entNew->getPosition())));
 
     // Trigonometric adjustment
     if (entNew->getPosition().get<0>() < entOld->getPosition().get<0>())
-        towardAngle = 3.1416 - towardAngle;
+        towardAngle = M_PI - towardAngle;
 
     if (entNew->getPosition().get<1>() < entOld->getPosition().get<1>())
         towardAngle = -towardAngle;
@@ -63,7 +68,7 @@ double Motion2D::compute(TRBuffer< Entity* > confBuffer,
 
     int index = confBuffer.getIndexAfter(timeOld);
     if (index == -1) // In case we don't have the index, we will just put isMoving to false
-        return false;
+        return 0;
 
     long actualTimelapse = timeNew - confBuffer.getTimeFromIndex(index); // Actual timelapse
 

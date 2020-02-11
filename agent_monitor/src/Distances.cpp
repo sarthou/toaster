@@ -10,6 +10,11 @@ map<string, double> Distances::computeDeltaDist(map<string, TRBuffer < Entity* >
 {
   map<string, double> deltaDistMap;
 
+  Entity* entMonitoredCur = mapEnts[agentMonitored].back();
+  unsigned long timeCur = entMonitoredCur->getTime();
+  unsigned long timePrev = timeCur - timelapse;
+  Entity* entMonitoredPrev = mapEnts[agentMonitored].getDataFromIndex(mapEnts[agentMonitored].getIndexAfter(timePrev));
+
   //For each entities in the same room
   for (map<string, TRBuffer < Entity*> >::iterator it = mapEnts.begin(); it != mapEnts.end(); ++it)
   {
@@ -17,18 +22,12 @@ map<string, double> Distances::computeDeltaDist(map<string, TRBuffer < Entity* >
     {
       // We compute the current distance
       Entity* entCur = it->second.back();
-      Entity* entMonitoredCur = mapEnts[agentMonitored].back();
 
       //Put this in a function
       double curDist = bg::distance(MathFunctions::convert3dTo2d(entCur->getPosition()),
                                     MathFunctions::convert3dTo2d(entMonitoredCur->getPosition()));
 
       // We compute the distance at now - timelapse
-      unsigned long timeCur = entMonitoredCur->getTime();
-      unsigned long timePrev = timeCur - timelapse;
-
-      Entity* entMonitoredPrev = mapEnts[agentMonitored].getDataFromIndex(mapEnts[agentMonitored].getIndexAfter(timePrev));
-
       double prevDist = bg::distance(MathFunctions::convert3dTo2d(entCur->getPosition()),
                                     MathFunctions::convert3dTo2d(entMonitoredPrev->getPosition()));
 

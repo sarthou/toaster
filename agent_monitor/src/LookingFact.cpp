@@ -22,9 +22,6 @@ map<string, double> LookingFact::compute(map<string, TRBuffer < Entity* > > mapE
     Vec_t agentHeadOrientation(3);
     Vec_t entityPosition(3);
     float entitytoAxisAngle;
-    Mat_t rotX(3);
-    Mat_t rotY(3);
-    Mat_t rotZ(3);
 
     //Get the monitored agent head entity
     //TODO add a rosparam for robot's head joint name
@@ -46,10 +43,13 @@ map<string, double> LookingFact::compute(map<string, TRBuffer < Entity* > > mapE
     agentHeadPosition[2] = bg::get<2>(monitoredAgentHead->getPosition());
     //Get 3d orientation (roll pitch yaw) from agent head
     agentHeadOrientation = (Vec_t) monitoredAgentHead->getOrientation();
-    //Compute rotation matricies from agent head orientation
-    rotX = MathFunctions::matrixfromAngle(0, agentHeadOrientation[0]);
-    rotY = MathFunctions::matrixfromAngle(1, agentHeadOrientation[1]);
-    rotZ = MathFunctions::matrixfromAngle(2, agentHeadOrientation[2]);
+
+    float cy = cos(agentHeadOrientation[2]);
+    float sy = sin(agentHeadOrientation[2]);
+    float cp = cos(agentHeadOrientation[1]);
+    float sp = sin(agentHeadOrientation[1]);
+
+    std::vector<float> rot {cp*cy, cp*sy, -sp};
 
     for (map<string, TRBuffer < Entity*> >::iterator it = mapEnts.begin(); it != mapEnts.end(); ++it) {
       if (it->first != agentMonitored)
@@ -84,13 +84,6 @@ map<string, double> LookingFact::compute(map<string, TRBuffer < Entity* > > mapE
 
         if(d <= deltaDist*deltaDist)
         {
-          float cy = cos(agentHeadOrientation[2]);
-          float sy = sin(agentHeadOrientation[2]);
-          float cp = cos(agentHeadOrientation[1]);
-          float sp = sin(agentHeadOrientation[1]);
-
-          std::vector<float> rot {cp*cy, cp*sy, -sp};
-
           float X = dx*rot[0] + dy*rot[1] + dz*rot[2];
 
           double ang = acos(X/sqrt(d));

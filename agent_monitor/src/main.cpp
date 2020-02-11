@@ -42,7 +42,7 @@ double motionTwd2DBodyAngleThresold_ = 1.0;
 
 // We consider motion toward when it moves more than 3 cm during 1/4 second toward an item, so when higher than 0.12 m/s
 unsigned long motionTwdBodyDeltaDistTime_ = oneSecond_ / 4;
-double movingTwdBodyDeltaDistThreshold_ = 0.03;
+double movingTwdBodyDeltaDistThreshold_ = 0.06;
 
 //We consider motion when it moves more than 3 cm during 1/4 second, so when higher than 0.12 m/s
 unsigned long motion2DJointTime_ = oneSecond_ / 4;
@@ -366,10 +366,9 @@ int main(int argc, char** argv) {
             //looking facts
             agentsMonitor_.computeLookingFacts(agentMonitored, lookTwdDeltaDist_, lookTwdAngularAperture_, factList_msg);
 
-            std::map<std::string, double> mapIdValue;
             // If the agent is moving
             double speed = Motion2D::compute(agentsMonitor_.mapTRBEntity_[(*itAgnt)], motion2DBodyTime_);
-            if (speed > (motion2DBodySpeedThreshold_)) //if in movement
+            if (speed > motion2DBodySpeedThreshold_) //if in movement
             {
               toaster_msgs::Fact fact_base = FactCreator::setFactBase((*itAgnt), agentsMonitor_.mapTRBEntity_);
 
@@ -377,31 +376,35 @@ int main(int argc, char** argv) {
               fact_msg = FactCreator::setMotionFact(fact_base, speed, 5.0);
               agentFactList_msg.factList.push_back(fact_msg);
 
-                // We compute the direction toward fact:
-                double angleDirection = Motion2D::computeDirection(agentsMonitor_.mapTRBEntity_[(*itAgnt)], motion2DBodyDirTime_);
-                mapIdValue = Motion2D::computeToward(agentsMonitor_.mapTRBEntity_, (*itAgnt), angleDirection, motionTwd2DBodyAngleThresold_);
-
-                for (std::map<std::string, double>::iterator it = mapIdValue.begin(); it != mapIdValue.end(); ++it)
+              // We compute /_\distance toward entities
+              std::map<std::string, double> mapIdValueDistance = Distances::computeDeltaDist(agentsMonitor_.mapTRBEntity_, (*itAgnt), motionTwdBodyDeltaDistTime_);
+              for (std::map<std::string, double>::iterator it = mapIdValueDistance.begin(); it != mapIdValueDistance.end(); ++it)
+              {
+                if (it->second > movingTwdBodyDeltaDistThreshold_)
                 {
-                  if (it->second > movingTwdBodyDeltaDistThreshold_)
+                  //Fact moving toward
+                  fact_msg = FactCreator::setDistanceFact(fact_base, it->first, it->second);
+                  agentFactList_msg.factList.push_back(fact_msg);
+                }
+              }
+
+              // We compute the direction toward fact:
+              double angleDirection = Motion2D::computeDirection(agentsMonitor_.mapTRBEntity_[(*itAgnt)], motion2DBodyDirTime_);
+              std::map<std::string, double> mapIdValueToward = Motion2D::computeToward(agentsMonitor_.mapTRBEntity_, (*itAgnt), angleDirection, motionTwd2DBodyAngleThresold_);
+
+              for (std::map<std::string, double>::iterator it = mapIdValueToward.begin(); it != mapIdValueToward.end(); ++it)
+              {
+                auto distance_it = mapIdValueDistance.find(it->first);
+                if(distance_it != mapIdValueDistance.end())
+                {
+                  if (distance_it->second > movingTwdBodyDeltaDistThreshold_)
                   {
                     //Fact moving toward
                     fact_msg = FactCreator::setDirectionFact(fact_base, it->first, it->second);
                     agentFactList_msg.factList.push_back(fact_msg);
                   }
                 }
-
-                // We compute /_\distance toward entities
-                mapIdValue = Distances::computeDeltaDist(agentsMonitor_.mapTRBEntity_, (*itAgnt), motionTwdBodyDeltaDistTime_);
-                for (std::map<std::string, double>::iterator it = mapIdValue.begin(); it != mapIdValue.end(); ++it)
-                {
-                  if (it->second > movingTwdBodyDeltaDistThreshold_)
-                  {
-                    //Fact moving toward
-                    fact_msg = FactCreator::setDistanceFact(fact_base, it->first, it->second);
-                    agentFactList_msg.factList.push_back(fact_msg);
-                  }
-                }
+              }
             }
             else // If agent is not moving, we compute his joint motion
             {
@@ -452,7 +455,7 @@ int main(int argc, char** argv) {
                     speed = Motion2D::compute(agentsMonitor_.mapTRBEntity_[(*itAgnt)], motion2DJointTime_, (*itJnt));
 
                     //We consider motion when it moves more than 3 cm during 1/4 second, so when higher than 0.12 m/s
-                    if (speed > (motion2DJointSpeedThreshold_))
+                    if (speed > motion2DJointSpeedThreshold_)
                     {
                         //Fact moving
                         fact_msg = fact_base;
@@ -461,7 +464,7 @@ int main(int argc, char** argv) {
 
                         // We compute the direction toward fact:
                         double angleDirection = Motion2D::computeDirection(agentsMonitor_.mapTRBEntity_[(*itAgnt)], motion2DJointDirTime_, (*itJnt));
-                        mapIdValue = Motion2D::computeToward(agentsMonitor_.mapTRBEntity_, (*itAgnt), angleDirection, motionTwd2DJointAngleThresold_, (*itJnt));
+                        std::map<std::string, double> mapIdValue = Motion2D::computeToward(agentsMonitor_.mapTRBEntity_, (*itAgnt), angleDirection, motionTwd2DJointAngleThresold_, (*itJnt));
                         for (std::map<std::string, double>::iterator it = mapIdValue.begin(); it != mapIdValue.end(); ++it)
                         {
                           fact_msg = fact_base;
