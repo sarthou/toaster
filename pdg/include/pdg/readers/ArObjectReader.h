@@ -15,16 +15,21 @@
 #include <string>
 #include "visualization_msgs/Marker.h"
 
+#include "tf/transform_listener.h"
+
 class ArObjectReader : public ObjectReader {
 
 public:
-    ArObjectReader();
-		~ArObjectReader() {};
+  ArObjectReader();
+	~ArObjectReader();
 
-    void init(ros::NodeHandle* node, std::string topic, std::string param);
+  void init(ros::NodeHandle* node, std::string topic, std::string param);
 
 private:
-    void CallbackObj(const visualization_msgs::Marker::ConstPtr& msg);
+
+  tf::TransformListener* listener_;
+
+  void CallbackObj(const visualization_msgs::Marker::ConstPtr& msg);
 };
 
 #endif	/* AROBJECTREADER_H */

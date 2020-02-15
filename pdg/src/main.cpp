@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
     robotReaders.push_back(&toasterSimuRobotRd);
 
     vector<ObjectReader*> objectReaders;
-    arObjectRd.init(&node, "ar_visualization_marker", "/pdg/arObjectReader");
+    arObjectRd.init(&node, "visualization_marker", "/pdg/arObjectReader");
     objectReaders.push_back(&arObjectRd);
     om2mObjectRd.init(&node, "/iot2pdg_updates", "/pdg/OM2MObjectReader");
     objectReaders.push_back(&om2mObjectRd);
