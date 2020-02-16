@@ -1,6 +1,9 @@
 #include "markerCreator.h"
 
+#include "toaster_msgs/OntologeniusService.h"
+
 std::map<std::string, std::vector<float> > MarkerCreator::colorMap_;
+ros::ServiceClient MarkerCreator::onto_client_;
 
 visualization_msgs::Marker MarkerCreator::defineCircle(geometry_msgs::Point p, double rayon, double height, std::string name, int id) {
   //declaration
@@ -451,6 +454,54 @@ visualization_msgs::Marker MarkerCreator::defineJoint(const toaster_msgs::Joint&
   marker.lifetime = ros::Duration(1.0);
 
   return marker;
+}
+
+void MarkerCreator::setMeshFromOnto(visualization_msgs::Marker& marker, const std::string& resource_name, ros::NodeHandle* node)
+{
+  std::string mesh;
+
+  toaster_msgs::OntologeniusService srv;
+  srv.request.action = "getOn";
+  srv.request.param = resource_name + ":hasMesh";
+  std::cout << "getOn " <<  srv.request.param << std::endl;
+
+  if(onto_client_.call(srv))
+  {
+    if(srv.response.values.size())
+      mesh = srv.response.values[0];
+  }
+  else
+  {
+    onto_client_ = node->serviceClient<toaster_msgs::OntologeniusService>("ontologenius/individual/robot", true);
+    if(onto_client_.call(srv))
+    {
+      if(srv.response.values.size())
+        mesh = srv.response.values[0];
+    }
+  }
+
+  if(mesh != "")
+  {
+    std::size_t pos = mesh.find("package://");
+    if(pos != std::string::npos)
+    {
+      mesh = mesh.substr(pos);
+      std::cout << "mesh = " << mesh << std::endl;
+
+      marker.scale.x = 1.0;
+      marker.scale.y = 1.0;
+      marker.scale.z = 1.0;
+
+      marker.color.r = 0.0;
+      marker.color.g = 0.0;
+      marker.color.b = 0.0;
+      marker.color.a = 0.0;
+
+      marker.type = visualization_msgs::Marker::MESH_RESOURCE; //use it as mesh
+      marker.mesh_resource = mesh;
+      marker.mesh_use_embedded_materials = true;
+    }
+  }
 }
 
 void MarkerCreator::setMesh(visualization_msgs::Marker& marker, const std::string& resource_name, TiXmlDocument* document)

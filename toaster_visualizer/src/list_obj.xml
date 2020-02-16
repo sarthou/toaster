@@ -93,4 +93,4 @@
     <object name="cube_MOCAP_1"                         mesh_resource="package://toaster_visualizer/mesh/toaster_objects/cube_MOCAP_1.dae" />
     <object name="cube_MOCAP_2"                         mesh_resource="package://toaster_visualizer/mesh/toaster_objects/cube_MOCAP_2.dae" />
 
-</list_obj> 
+</list_obj>

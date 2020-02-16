@@ -10,6 +10,7 @@
 
 #include "toaster_msgs/Joint.h"
 
+#include <ros/ros.h>
 #include <tinyxml.h>
 
 #ifndef MARKERCREATOR_H
@@ -80,6 +81,7 @@ public:
 
   static visualization_msgs::Marker defineJoint(const toaster_msgs::Joint& joint, int id);
 
+  static void setMeshFromOnto(visualization_msgs::Marker& marker, const std::string& resource_name, ros::NodeHandle* node);
   static void setMesh(visualization_msgs::Marker& marker, const std::string& resource_name, TiXmlDocument* document);
 
   /////////////////////////////
@@ -124,6 +126,7 @@ public:
 
 private:
    static std::map<std::string, std::vector<float> > colorMap_;
+   static ros::ServiceClient onto_client_;
 };
 
 #endif /*MARKERCREATOR_H*/

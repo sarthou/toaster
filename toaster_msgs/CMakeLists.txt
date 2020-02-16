@@ -79,6 +79,8 @@ add_service_files(
   GetFacts.srv
   PlotFactsDB.srv
   LoadSaveDB.srv
+
+  OntologeniusService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

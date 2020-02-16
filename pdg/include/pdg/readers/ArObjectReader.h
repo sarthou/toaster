@@ -26,10 +26,14 @@ public:
   void init(ros::NodeHandle* node, std::string topic, std::string param);
 
 private:
-
+  ros::ServiceClient onto_client_;
   tf::TransformListener* listener_;
 
   void CallbackObj(const visualization_msgs::Marker::ConstPtr& msg);
+
+  std::string getObjectId(int tag_id);
+  std::string getObjectType(const std::string& obj_id);
+
 };
 
 #endif	/* AROBJECTREADER_H */

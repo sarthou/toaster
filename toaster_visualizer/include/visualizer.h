@@ -31,6 +31,8 @@ public:
 
   bool findInArray(const visualization_msgs::MarkerArray& array, visualization_msgs::Marker& res_marker, const std::string id);
 
+  ros::NodeHandle* getNode() { return node_; }
+
 private:
   std::vector<std::string> nameList_;
   int idCpt_;

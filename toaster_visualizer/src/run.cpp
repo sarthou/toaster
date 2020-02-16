@@ -166,7 +166,8 @@ public:
     {
         obj_list.markers.clear();
 
-        for (int i = 0; i < msg->objectList.size(); i++) {
+        for (int i = 0; i < msg->objectList.size(); i++)
+        {
             visualization_msgs::Marker m = MarkerCreator::defineObj(msg->objectList[i].meEntity.pose,
                                                       msg->objectList[i].meEntity.name,
                                                       isActivated(msg->objectList[i].meEntity.id),
@@ -181,6 +182,8 @@ public:
 
                 obj_list.markers.push_back(mn);
             }
+            MarkerCreator::setMeshFromOnto(m, msg->objectList[i].meEntity.id, visualizer.getNode());
+
             obj_list.markers.push_back(m);
 
             //ROS_DEBUG("obj %d", m.id);
