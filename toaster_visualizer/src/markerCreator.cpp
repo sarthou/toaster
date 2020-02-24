@@ -463,7 +463,6 @@ void MarkerCreator::setMeshFromOnto(visualization_msgs::Marker& marker, const st
   toaster_msgs::OntologeniusService srv;
   srv.request.action = "getOn";
   srv.request.param = resource_name + ":hasMesh";
-  std::cout << "getOn " <<  srv.request.param << std::endl;
 
   if(onto_client_.call(srv))
   {
@@ -486,7 +485,6 @@ void MarkerCreator::setMeshFromOnto(visualization_msgs::Marker& marker, const st
     if(pos != std::string::npos)
     {
       mesh = mesh.substr(pos);
-      std::cout << "mesh = " << mesh << std::endl;
 
       marker.scale.x = 1.0;
       marker.scale.y = 1.0;

@@ -52,7 +52,14 @@ void ArObjectReader::CallbackObj(const visualization_msgs::Marker::ConstPtr& msg
       object_name = object_id;
     }
     else
+    {
       object_name = getObjectType(object_id);
+
+      std::string tmp_id = "obj_" + std::to_string(msg->id);
+      auto id_it = globalLastConfig_.find(tmp_id);
+      if(id_it != globalLastConfig_.end())
+        globalLastConfig_.erase(id_it);
+    }
 
   	ros::Time now = ros::Time::now();
   	MovableObject* curObject;
@@ -60,26 +67,36 @@ void ArObjectReader::CallbackObj(const visualization_msgs::Marker::ConstPtr& msg
   	//create a new object with the same id as the message
     lastConfigMutex_.lock();
 
-  	if (globalLastConfig_.find(object_id) == globalLastConfig_.end()) {
+  	if (globalLastConfig_.find(object_id) == globalLastConfig_.end())
+    {
   		curObject = new MovableObject(object_id);
   		curObject->setName(object_name);
       increaseNbObjects();
-  	} else
+  	}
+    else
   		curObject = globalLastConfig_[object_id];
 
-      tf::Transform cam_to_target;
-      tf::poseMsgToTF(msg->pose, cam_to_target);
-
-      tf::StampedTransform map_to_cam;
-      listener_->lookupTransform("/map", msg->header.frame_id, ros::Time(0), map_to_cam);
-
-      tf::Transform map_to_target;
-      map_to_target = map_to_cam * cam_to_target;
-
-      geometry_msgs::Pose pose;
-      tf::poseTFToMsg(map_to_target, pose);
-
     lastConfigMutex_.unlock();
+
+    tf::Transform cam_to_target;
+    tf::poseMsgToTF(msg->pose, cam_to_target);
+
+    tf::StampedTransform map_to_cam;
+    try
+    {
+      listener_->lookupTransform("/map", msg->header.frame_id, ros::Time(0), map_to_cam);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s",ex.what());
+      return;
+    }
+
+    tf::Transform map_to_target;
+    map_to_target = map_to_cam * cam_to_target;
+
+    geometry_msgs::Pose pose;
+    tf::poseTFToMsg(map_to_target, pose);
 
   	//set object position
   	bg::model::point<double, 3, bg::cs::cartesian> objectPosition;
